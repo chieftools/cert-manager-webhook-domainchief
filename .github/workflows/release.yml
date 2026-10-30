@@ -8,6 +8,8 @@ on:
 permissions:
   contents: write
   packages: write
+  # Required for keyless cosign signing using the GitHub Actions OIDC identity.
+  id-token: write
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
@@ -24,6 +26,8 @@ jobs:
           go-version-file: go.mod
 
       - uses: azure/setup-helm@v5
+
+      - uses: sigstore/cosign-installer@v4
 
       - name: Test
         run: make test
@@ -54,6 +58,7 @@ jobs:
             org.opencontainers.image.licenses=MIT
 
       - name: Build and push image
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -67,13 +72,27 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Sign image
+        run: cosign sign --yes "${IMAGE_NAME}@${{ steps.build.outputs.digest }}"
+
       - name: Package and push chart
+        id: chart
         run: |
+          set -euo pipefail
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
           helm package charts/cert-manager-webhook-domainchief \
             --version "${{ steps.version.outputs.version }}" \
             --app-version "${{ steps.version.outputs.version }}"
-          helm push "cert-manager-webhook-domainchief-${{ steps.version.outputs.version }}.tgz" "$CHART_REGISTRY"
+          helm push "cert-manager-webhook-domainchief-${{ steps.version.outputs.version }}.tgz" "$CHART_REGISTRY" 2>&1 | tee push.log
+          digest="$(grep -oE 'sha256:[a-f0-9]{64}' push.log | head -n 1)"
+          if [ -z "$digest" ]; then
+            echo "::error::Could not determine the pushed chart digest."
+            exit 1
+          fi
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: Sign chart
+        run: cosign sign --yes "${CHART_REGISTRY#oci://}/cert-manager-webhook-domainchief@${{ steps.chart.outputs.digest }}"
 
       - name: Create GitHub release
         env:

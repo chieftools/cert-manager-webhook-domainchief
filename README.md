@@ -86,6 +86,20 @@ spec:
 
 The domain must use Domain Chief hosted DNS. Challenge records are always published on the `_acme-challenge` name of the domain, so the `cnameStrategy: Follow` solver option is not supported.
 
+## Verifying signatures
+
+Images and charts are signed with [cosign](https://docs.sigstore.dev/cosign/) using keyless signing from the release workflow. Verify them using:
+
+```bash
+cosign verify ghcr.io/chieftools/cert-manager-webhook-domainchief:<version> \
+  --certificate-identity-regexp '^https://github\.com/chieftools/cert-manager-webhook-domainchief/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+cosign verify ghcr.io/chieftools/charts/cert-manager-webhook-domainchief:<version> \
+  --certificate-identity-regexp '^https://github\.com/chieftools/cert-manager-webhook-domainchief/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
 ## Development
 
 Run the unit tests:

@@ -108,6 +108,20 @@ Challenge records are always published on the `_acme-challenge` name of the doma
 helm uninstall cert-manager-webhook-domainchief --namespace cert-manager
 ```
 
+## Verifying signatures
+
+The chart and image are signed with [cosign](https://docs.sigstore.dev/cosign/) using keyless signing from the release workflow. Verify them using:
+
+```bash
+cosign verify ghcr.io/chieftools/charts/cert-manager-webhook-domainchief:<version> \
+  --certificate-identity-regexp '^https://github\.com/chieftools/cert-manager-webhook-domainchief/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+cosign verify ghcr.io/chieftools/cert-manager-webhook-domainchief:<version> \
+  --certificate-identity-regexp '^https://github\.com/chieftools/cert-manager-webhook-domainchief/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
 ## Source and support
 
 The source code is available on [GitHub](https://github.com/chieftools/cert-manager-webhook-domainchief), please report issues there. Security vulnerabilities should be reported privately as described in the [security policy](https://github.com/chieftools/cert-manager-webhook-domainchief/security/policy).
