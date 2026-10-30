@@ -9,7 +9,14 @@ import (
 	"time"
 
 	acmetest "github.com/cert-manager/cert-manager/test/acme"
+	"github.com/go-logr/logr"
+	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+func init() {
+	// The envtest control plane logs through controller-runtime, which warns with a stack trace when no logger is set.
+	ctrllog.SetLogger(logr.Discard())
+}
 
 // TestConformance runs the cert-manager DNS01 webhook conformance suite against the real Domain Chief API.
 //
