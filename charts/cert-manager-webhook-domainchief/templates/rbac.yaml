@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "domainchief-webhook.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "domainchief-webhook.labels" . | nindent 4 }}
+---
+# Grant the webhook permission to read the ConfigMap containing the Kubernetes
+# apiserver's requestheader-ca-certificate.
+# This ConfigMap is automatically created by the Kubernetes apiserver.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "domainchief-webhook.fullname" . }}:webhook-authentication-reader
+  namespace: kube-system
+  labels:
+    {{- include "domainchief-webhook.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "domainchief-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+# The apiserver gets the auth-delegator role to delegate auth decisions to
+# the core apiserver
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "domainchief-webhook.fullname" . }}:auth-delegator
+  labels:
+    {{- include "domainchief-webhook.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "domainchief-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+# The webhook apiserver watches API Priority and Fairness configuration
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "domainchief-webhook.fullname" . }}:flowcontrol
+  labels:
+    {{- include "domainchief-webhook.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - flowcontrol.apiserver.k8s.io
+    resources:
+      - flowschemas
+      - prioritylevelconfigurations
+    verbs:
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "domainchief-webhook.fullname" . }}:flowcontrol
+  labels:
+    {{- include "domainchief-webhook.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "domainchief-webhook.fullname" . }}:flowcontrol
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "domainchief-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+# Grant cert-manager permission to validate using our apiserver
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "domainchief-webhook.fullname" . }}:domain-solver
+  labels:
+    {{- include "domainchief-webhook.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - {{ .Values.groupName }}
+    resources:
+      - '*'
+    verbs:
+      - 'create'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "domainchief-webhook.fullname" . }}:domain-solver
+  labels:
+    {{- include "domainchief-webhook.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "domainchief-webhook.fullname" . }}:domain-solver
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ .Values.certManager.serviceAccountName }}
+    namespace: {{ .Values.certManager.namespace }}
+{{- range $namespace := (.Values.secretAccess.namespaces | default (list .Values.certManager.namespace)) }}
+---
+# Grant the webhook permission to read the Domain Chief API key Secret
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "domainchief-webhook.fullname" $ }}:secret-reader
+  namespace: {{ $namespace }}
+  labels:
+    {{- include "domainchief-webhook.labels" $ | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    {{- with $.Values.secretAccess.secretNames }}
+    resourceNames:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "domainchief-webhook.fullname" $ }}:secret-reader
+  namespace: {{ $namespace }}
+  labels:
+    {{- include "domainchief-webhook.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "domainchief-webhook.fullname" $ }}:secret-reader
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "domainchief-webhook.fullname" $ }}
+    namespace: {{ $.Release.Namespace }}
+{{- end }}

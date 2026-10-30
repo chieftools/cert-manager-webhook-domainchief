@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: azure/setup-helm@v5
+
+      - name: Lint
+        run: make lint
+
+      - name: Test
+        run: make test
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Runs the cert-manager conformance suite against the real Domain Chief API.
+  # Needs the TEST_ZONE_NAME repository variable and DOMAINCHIEF_API_KEY repository secret.
+  conformance:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    concurrency:
+      group: conformance
+    env:
+      TEST_ZONE_NAME: ${{ vars.TEST_ZONE_NAME }}
+      DOMAINCHIEF_API_KEY: ${{ secrets.DOMAINCHIEF_API_KEY }}
+    steps:
+      - name: Check configuration
+        id: configured
+        run: |
+          if [ -n "$TEST_ZONE_NAME" ] && [ -n "$DOMAINCHIEF_API_KEY" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Skipping conformance tests, TEST_ZONE_NAME or DOMAINCHIEF_API_KEY is not configured."
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.configured.outputs.ok == 'true'
+
+      - uses: actions/setup-go@v7
+        if: steps.configured.outputs.ok == 'true'
+        with:
+          go-version-file: go.mod
+
+      - name: Conformance
+        if: steps.configured.outputs.ok == 'true'
+        run: make test-conformance

@@ -1,0 +1,63 @@
+# The API group the webhook registers under. Reference it as `groupName` in your issuer's webhook solver.
+# There is no need to change this unless you run multiple installations of this webhook in a single cluster.
+groupName: acme.domain.chief.app
+
+certManager:
+  # The namespace cert-manager is installed in.
+  namespace: cert-manager
+  # The service account cert-manager runs as.
+  serviceAccountName: cert-manager
+
+secretAccess:
+  # Namespaces in which the webhook may read the Secret holding the Domain Chief API key.
+  # For a ClusterIssuer the Secret lives in cert-manager's cluster resource namespace (usually `cert-manager`),
+  # for an Issuer the Secret lives in the same namespace as the Issuer.
+  # Defaults to `certManager.namespace` when empty.
+  namespaces: []
+  # Names of the Secrets the webhook may read. Leave empty to allow reading every Secret in the namespaces above.
+  secretNames:
+    - domainchief-api-key
+
+image:
+  repository: ghcr.io/chieftools/cert-manager-webhook-domainchief
+  # Defaults to the chart appVersion.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 443
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+resources: {}
+  # limits:
+  #   memory: 64Mi
+  # requests:
+  #   cpu: 10m
+  #   memory: 32Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

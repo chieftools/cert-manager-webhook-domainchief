@@ -1,0 +1,20 @@
+The Domain Chief webhook is installed.
+
+1. Create a Domain Chief API key with only the `domainchief:acme:write` scope:
+   https://account.chief.app/team/select/token/create?scopes=domainchief:acme:write&ref=cert-manager-webhook-domainchief
+
+2. Store it in a Secret the webhook may read ({{ join ", " (.Values.secretAccess.secretNames | default (list "<any>")) }} in {{ join ", " (.Values.secretAccess.namespaces | default (list .Values.certManager.namespace)) }}):
+
+   kubectl -n {{ first (.Values.secretAccess.namespaces | default (list .Values.certManager.namespace)) }} create secret generic {{ first (.Values.secretAccess.secretNames | default (list "domainchief-api-key")) }} --from-literal=api-key=ctt_...
+
+3. Reference the webhook from an issuer's DNS01 solver:
+
+   solvers:
+     - dns01:
+         webhook:
+           groupName: {{ .Values.groupName }}
+           solverName: domainchief
+           config:
+             apiKeySecretRef:
+               name: {{ first (.Values.secretAccess.secretNames | default (list "domainchief-api-key")) }}
+               key: api-key

@@ -1,0 +1,17 @@
+# Binaries
+/webhook
+/cert-manager-webhook-domainchief
+*.test
+*.out
+
+# Make artifacts
+/bin
+/_out
+
+# Packaged charts
+*.tgz
+
+# IDE
+/.idea/
+/.vscode/
+.DS_Store

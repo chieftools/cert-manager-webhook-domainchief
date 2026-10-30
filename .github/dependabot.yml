@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: monthly
+      time: "10:00"
+      timezone: Europe/Amsterdam
+    labels:
+      - ":link: dependencies"
+    groups:
+      kubernetes:
+        patterns:
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+          - "github.com/cert-manager/*"
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: monthly
+      time: "10:00"
+      timezone: Europe/Amsterdam
+    labels:
+      - ":link: dependencies"
+  - package-ecosystem: github-actions
+    directory: "/.github/workflows"
+    schedule:
+      interval: monthly
+      time: "10:00"
+      timezone: Europe/Amsterdam
+    labels:
+      - ":link: dependencies"

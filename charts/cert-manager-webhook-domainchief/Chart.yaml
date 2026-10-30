@@ -1,0 +1,18 @@
+apiVersion: v2
+name: cert-manager-webhook-domainchief
+description: cert-manager ACME DNS01 webhook solver for Domain Chief
+type: application
+# Both versions are set from the release tag when the chart is published.
+version: 0.0.0
+appVersion: "0.0.0"
+home: https://github.com/chieftools/cert-manager-webhook-domainchief
+sources:
+  - https://github.com/chieftools/cert-manager-webhook-domainchief
+keywords:
+  - cert-manager
+  - acme
+  - dns01
+  - domainchief
+maintainers:
+  - name: Chief Tools
+    url: https://chief.app
