@@ -6,6 +6,7 @@ type: application
 version: 0.0.0
 appVersion: "0.0.0"
 home: https://github.com/chieftools/cert-manager-webhook-domainchief
+icon: https://static.assets.chief.tools/icons/domainchief.svg
 sources:
   - https://github.com/chieftools/cert-manager-webhook-domainchief
 keywords:
