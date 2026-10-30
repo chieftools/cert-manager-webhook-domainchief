@@ -1,5 +1,9 @@
 # [cert-manager](https://cert-manager.io/) [Domain Chief](https://domain.chief.app?ref=cert-manager-webhook-domainchief) webhook
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/cert-manager-webhook-domainchief)](https://artifacthub.io/packages/search?repo=cert-manager-webhook-domainchief)
+[![Release](https://img.shields.io/github/v/release/chieftools/cert-manager-webhook-domainchief)](https://github.com/chieftools/cert-manager-webhook-domainchief/releases)
+[![CI](https://github.com/chieftools/cert-manager-webhook-domainchief/actions/workflows/ci.yml/badge.svg)](https://github.com/chieftools/cert-manager-webhook-domainchief/actions/workflows/ci.yml)
+
 This webhook enables [DNS01 validation](https://cert-manager.io/docs/configuration/acme/dns01/) with cert-manager when using [Domain Chief](https://domain.chief.app?ref=cert-manager-webhook-domainchief) hosted DNS.
 
 ## Installation

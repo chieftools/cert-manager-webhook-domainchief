@@ -1,0 +1,11 @@
+# Artifact Hub repository metadata, used for the verified publisher badge.
+# Published to the chart's OCI repository under the `artifacthub.io` tag:
+#
+#   oras push \
+#     ghcr.io/chieftools/charts/cert-manager-webhook-domainchief:artifacthub.io \
+#     --config /dev/null:application/vnd.cncf.artifacthub.config.v1+yaml \
+#     artifacthub-repo.yml:application/vnd.cncf.artifacthub.repository-metadata.layer.v1.yaml
+repositoryID: 98da62cd-6f86-4280-b0e9-1ac547282cf1
+owners:
+  - name: Chief Tools
+    email: hello@chief.app

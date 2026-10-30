@@ -13,7 +13,19 @@ keywords:
   - cert-manager
   - acme
   - dns01
+  - letsencrypt
   - domainchief
 maintainers:
   - name: Chief Tools
+    email: hello@chief.app
     url: https://chief.app
+annotations:
+  artifacthub.io/category: security
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |
+    - name: Domain Chief
+      url: https://domain.chief.app
+    - name: cert-manager DNS01 webhooks
+      url: https://cert-manager.io/docs/configuration/acme/dns01/webhook/
+    - name: support
+      url: https://github.com/chieftools/cert-manager-webhook-domainchief/issues
