@@ -86,6 +86,8 @@ spec:
 
 The domain must use Domain Chief hosted DNS. Challenge records are always published on the `_acme-challenge` name of the domain, so the `cnameStrategy: Follow` solver option is not supported.
 
+A new challenge value takes one to three minutes to reach every hosted DNS nameserver. cert-manager only checks the nameservers it can reach, which can serve the value before the others do, so the webhook waits until Domain Chief reports that every nameserver serves it. A Kubernetes API request cannot take longer than a minute, so until then the challenge shows `Error presenting challenge: challenge for … is not served by every hosted DNS nameserver yet` and cert-manager presents it again. This is expected and resolves on its own.
+
 ## Verifying signatures
 
 Images and charts are signed with [cosign](https://docs.sigstore.dev/cosign/) using keyless signing from the release workflow. Verify them using:

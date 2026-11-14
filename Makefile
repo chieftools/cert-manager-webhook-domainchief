@@ -23,7 +23,7 @@ test-conformance: $(ENVTEST)
 	TEST_ASSET_ETCD="$$ASSETS/etcd" \
 	TEST_ASSET_KUBE_APISERVER="$$ASSETS/kube-apiserver" \
 	TEST_ASSET_KUBECTL="$$ASSETS/kubectl" \
-	$(GO) test -tags conformance -run TestConformance -v -count=1 .
+	$(GO) test -tags conformance -run TestConformance -v -count=1 -timeout 30m .
 
 .PHONY: lint
 lint:

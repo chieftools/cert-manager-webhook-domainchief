@@ -55,7 +55,8 @@ stringData:
 		t.Fatal(err)
 	}
 
-	fixture := acmetest.NewFixture(&solver{},
+	// The suite calls Present directly and expects it to succeed, cert-manager would call it again instead.
+	fixture := acmetest.NewFixture(&solver{presentTimeout: 10 * time.Minute},
 		acmetest.SetResolvedZone(zone),
 		// The API only accepts `_acme-challenge` names, so we cannot use the default test FQDN.
 		acmetest.SetResolvedFQDN("_acme-challenge.cert-manager-conformance."+zone),

@@ -5,6 +5,8 @@ go 1.27.3
 require (
 	github.com/cert-manager/cert-manager v1.21.3
 	github.com/go-logr/logr v1.4.4
+	github.com/libdns/domainchief v0.2.0
+	github.com/libdns/libdns v1.1.1
 	k8s.io/api v0.37.2
 	k8s.io/apiextensions-apiserver v0.37.2
 	k8s.io/apimachinery v0.37.2
