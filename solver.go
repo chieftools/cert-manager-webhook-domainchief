@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	// defaultPresentTimeout keeps a Present call below the 60 second request timeout of the Kubernetes API server,
-	// which forwards cert-manager's call to the webhook.
-	defaultPresentTimeout = 45 * time.Second
+	// defaultPresentTimeout keeps a Present call well below the timeout of the Kubernetes API server forwarding
+	// cert-manager's call to the webhook, which cancels the request after about 30 seconds.
+	defaultPresentTimeout = 20 * time.Second
 
 	cleanUpTimeout = 30 * time.Second
 )
