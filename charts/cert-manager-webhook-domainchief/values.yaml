@@ -31,6 +31,14 @@ fullnameOverride: ""
 
 replicaCount: 1
 
+podDisruptionBudget:
+  # Create a PodDisruptionBudget for the webhook pods.
+  # Only enable this with `replicaCount` of 2 or more, with a single replica `minAvailable: 1` blocks node drains.
+  enabled: false
+  minAvailable: 1
+  # Set instead of `minAvailable` to limit how many pods may be unavailable, takes precedence when set.
+  # maxUnavailable: 1
+
 service:
   type: ClusterIP
   port: 443
@@ -49,15 +57,28 @@ securityContext:
     drop:
       - ALL
 
-resources: {}
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
   # limits:
   #   memory: 64Mi
-  # requests:
-  #   cpu: 10m
-  #   memory: 32Mi
 
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
+
+# Spread the webhook pods across nodes or zones when running more than one replica.
+# The pods carry the `app` and `release` labels, use them in the `labelSelector`:
+#
+# topologySpreadConstraints:
+#   - maxSkew: 1
+#     topologyKey: kubernetes.io/hostname
+#     whenUnsatisfiable: ScheduleAnyway
+#     labelSelector:
+#       matchLabels:
+#         app: cert-manager-webhook-domainchief
+#         release: cert-manager-webhook-domainchief
+topologySpreadConstraints: []

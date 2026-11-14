@@ -76,6 +76,29 @@ spec:
 
 Challenge records are always published on the `_acme-challenge` name of the domain, so the `cnameStrategy: Follow` solver option is not supported.
 
+## Running multiple replicas
+
+cert-manager calls the webhook through the Kubernetes API server, challenges can't be presented or cleaned up while no webhook pod is ready. To keep a pod available during node drains and upgrades, run two replicas spread over different nodes with a PodDisruptionBudget:
+
+```yaml
+replicaCount: 2
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app: cert-manager-webhook-domainchief
+        release: cert-manager-webhook-domainchief
+```
+
+The `release` label is the Helm release name, change it when you installed the chart under a different name.
+
 ## Values
 
 | Key | Default | Description |
@@ -92,15 +115,19 @@ Challenge records are always published on the `_acme-challenge` name of the doma
 | `nameOverride` | `""` | Override the chart name. |
 | `fullnameOverride` | `""` | Override the full resource name. |
 | `replicaCount` | `1` | Number of webhook replicas. |
+| `podDisruptionBudget.enabled` | `false` | Create a PodDisruptionBudget for the webhook pods. Only enable it with a `replicaCount` of 2 or more, with a single replica it blocks node drains. |
+| `podDisruptionBudget.minAvailable` | `1` | Minimum number or percentage of pods that must stay available. |
+| `podDisruptionBudget.maxUnavailable` | unset | Maximum number or percentage of pods that may be unavailable, takes precedence over `minAvailable` when set. |
 | `service.type` | `ClusterIP` | Service type. |
 | `service.port` | `443` | Service port. |
 | `podAnnotations` | `{}` | Annotations added to the webhook pod. |
 | `podSecurityContext` | non-root, `RuntimeDefault` seccomp | Pod security context. |
 | `securityContext` | read-only root filesystem, no privilege escalation, all capabilities dropped | Container security context. |
-| `resources` | `{}` | Container resource requests and limits. |
+| `resources` | requests `10m` CPU and `32Mi` memory | Container resource requests and limits. |
 | `nodeSelector` | `{}` | Node selector. |
 | `tolerations` | `[]` | Tolerations. |
 | `affinity` | `{}` | Affinity rules. |
+| `topologySpreadConstraints` | `[]` | Topology spread constraints, the pods carry the `app` and `release` labels to select on. |
 
 ## Uninstallation
 

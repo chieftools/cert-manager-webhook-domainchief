@@ -82,6 +82,24 @@
       "minimum": 1,
       "description": "Number of webhook replicas."
     },
+    "podDisruptionBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Create a PodDisruptionBudget for the webhook pods."
+        },
+        "minAvailable": {
+          "type": ["integer", "string"],
+          "description": "Minimum number or percentage of pods that must stay available."
+        },
+        "maxUnavailable": {
+          "type": ["integer", "string"],
+          "description": "Maximum number or percentage of pods that may be unavailable, takes precedence over minAvailable."
+        }
+      }
+    },
     "service": {
       "type": "object",
       "additionalProperties": false,
@@ -129,6 +147,11 @@
     "affinity": {
       "type": "object",
       "description": "Affinity rules."
+    },
+    "topologySpreadConstraints": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Topology spread constraints."
     }
   }
 }
